@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Открытка-новелла для Dodoshka</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+
+
+  <style>
+    :root{
+      --bg0:#060512;
+      --bg1:#14122a;
+
+      --ink:#f6f1e3;
+      --muted:#c9c1ab;
+
+      --gold:#f2d28a;
+      --stroke: rgba(242,210,138,.22);
+
+      --ok: rgba(124,247,177,.88);
+      --danger: rgba(255,95,109,.95);
+
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --pixel: "Press Start 2P", var(--mono);
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body { height:100%; }
+
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family:var(--sans);
+      background:
+        radial-gradient(1200px 800px at 18% 10%, rgba(242,210,138,.10), transparent 62%),
+        radial-gradient(900px 700px at 82% 24%, rgba(124,247,177,.07), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
+    }
+
+    .scanlines{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,.020),
+        rgba(255,255,255,.020) 1px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 8px
+      );
+      mix-blend-mode: overlay;
+      opacity:.16;
+      z-index:2;
+    }
+    .vignette{
+      position:fixed; inset:-2px;
+      pointer-events:none;
+      background: radial-gradient(1400px 900px at 50% 35%, transparent 52%, rgba(0,0,0,.64));
+      opacity:.60;
+      z-index:2;
+    }
+
+    .crumbs{
+      position:fixed; inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      opacity:.50;
+      z-index:1;
+    }
+    .crumb{
+      position:absolute;
+      width:6px; height:6px;
+      border-radius: 2px;
+      background: rgba(242,210,138,.28);
+      box-shadow: 0 0 10px rgba(242,210,138,.06);
+      animation: drift var(--t) linear infinite;
+      transform: translate3d(0,0,0);
+    }
+    @keyframes drift{
+      from{ transform: translate3d(var(--x), 110vh, 0) rotate(0deg); }
+      to  { transform: translate3d(calc(var(--x) + 60px), -10vh, 0) rotate(360deg); }
+    }
+
+    .wrap{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      position:relative;
+      z-index:3;
+    }
+
+    .frame{
+      width: min(1400px, calc(100vw - 24px));
+      height: min(880px, calc(100vh - 24px));
+      border:1px solid var(--stroke);
+      border-radius: calc(var(--radius) + 14px);
+      background: linear-gradient(180deg, rgba(18,17,37,.74), rgba(6,5,18,.58));
+      box-shadow: 0 22px 90px rgba(0,0,0,.62);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .frame:before{
+      content:"";
+      position:absolute; inset:-2px;
+      pointer-events:none;
+      background: radial-gradient(1100px 260px at 50% 0%, rgba(242,210,138,.14), transparent 60%);
+      opacity:.78;
+      animation: glow 3.8s ease-in-out infinite;
+    }
+    @keyframes glow{
+      0%,100%{ opacity:.55; transform: translateY(0); }
+      50%{ opacity:.82; transform: translateY(2px); }
+    }
+
+    .hudTop{
+      position:absolute;
+      top:18px; left:18px; right:18px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      z-index:5;
+      pointer-events:none;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      max-width: 70%;
+    }
+    .brand .h{
+      font-family:var(--pixel);
+      font-size:12px;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      color:var(--gold);
+      line-height:1.5;
+    }
+    .brand .s{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      opacity:.95;
+      line-height:1.35;
+    }
+
+    .miniHud{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      pointer-events:none;
+    }
+    .pill{
+      border:1px solid rgba(242,210,138,.18);
+      background: rgba(18,17,37,.32);
+      padding:7px 10px;
+      border-radius: 999px;
+      white-space:nowrap;
+      backdrop-filter: blur(4px);
+    }
+
+    .sceneArea{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .sceneImgWrap{
+      position:absolute;
+      top:72px;
+      left:18px;
+      right:18px;
+      bottom:260px;
+      border-radius: 22px;
+      overflow:hidden;
+      border:1px solid rgba(242,210,138,.16);
+      background: rgba(0,0,0,.22);
+      transform: translateY(12px);
+      opacity:0;
+      filter: blur(3px) saturate(.92) brightness(.92);
+      transition: opacity .35s ease, transform .35s ease, filter .35s ease;
+    }
+    .sceneImgWrap.show{
+      opacity:1;
+      transform: translateY(0px);
+      filter: blur(0px) saturate(1) brightness(.98);
+    }
+    .sceneImgWrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      background: rgba(0,0,0,.2);
+    }
+    .sceneImgWrap:after{
+      content:"";
+      position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.16), rgba(0,0,0,.62)),
+        radial-gradient(1200px 520px at 50% 86%, rgba(0,0,0,.62), transparent 68%);
+      pointer-events:none;
+    }
+
+    .textBox{
+      width: min(1040px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(242,210,138,.20);
+      background: rgba(6,5,18,.82);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 70px rgba(0,0,0,.64);
+      padding:18px 18px 16px 18px;
+      position:relative;
+      z-index:6;
+    }
+
+    .chapter{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .chapter .title{
+      font-family:var(--pixel);
+      font-size:12px;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      color: var(--gold);
+      line-height:1.55;
+    }
+    .chapter .meta{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      opacity:.95;
+    }
+
+    .typed{
+      font-size:20px;
+      line-height:1.9;
+      color: rgba(246,241,227,.98);
+      min-height: 200px;
+      padding-right: 36px;
+      white-space: pre-wrap;
+      max-width: 72ch;
+      text-wrap: pretty;
+    }
+
+    .cursor{
+      display:inline-block;
+      width:12px;
+      height:18px;
+      margin-left:2px;
+      background: rgba(242,210,138,.65);
+      vertical-align:-3px;
+      animation: blink 1s steps(2) infinite;
+    }
+    @keyframes blink{ 50%{ opacity:0; } }
+
+    .hintRow{
+      margin-top:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      max-width: 70%;
+    }
+    .tag{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(242,210,138,.16);
+      color: rgba(201,193,171,.95);
+      background: rgba(7,6,17,.22);
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    button{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      padding:12px 16px;
+      border-radius: 18px;
+      font-family:var(--pixel);
+      font-size:12px;
+      letter-spacing:.4px;
+      color: #1a1406;
+      background: linear-gradient(180deg, var(--gold), rgba(210,160,62,1));
+      box-shadow: 0 12px 18px rgba(0,0,0,.28);
+      transition: transform .12s ease, filter .12s ease;
+      text-transform:uppercase;
+    }
+    button:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+    button:active{ transform: translateY(0px); filter: brightness(.98); }
+    button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+    .ghost{
+      background: transparent;
+      color: var(--ink);
+      border:1px solid rgba(242,210,138,.26);
+      box-shadow:none;
+      font-weight:800;
+    }
+
+    .battle{
+      margin-top:12px;
+      border-radius: 18px;
+      border:1px solid rgba(124,247,177,.20);
+      background: rgba(7,6,17,.18);
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+      max-width: 72ch;
+    }
+    .battle:before{
+      content:"";
+      position:absolute; inset:-2px;
+      pointer-events:none;
+      background: radial-gradient(420px 120px at 20% 0%, rgba(124,247,177,.08), transparent 60%);
+    }
+    .battleHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+      position:relative;
+      z-index:1;
+    }
+    .battleHead .left{
+      font-family:var(--pixel);
+      font-size:11px;
+      letter-spacing:.45px;
+      color:var(--ok);
+      text-transform:uppercase;
+      line-height:1.5;
+    }
+    .battleHead .right{
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .battleLog{
+      position:relative;
+      z-index:1;
+      font-family:var(--mono);
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(6,5,18,.30);
+      border:1px solid rgba(242,210,138,.12);
+      border-radius:14px;
+      padding:10px 12px;
+      line-height:1.4;
+      min-height: 54px;
+    }
+
+    .hand{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .cardBtn{
+      text-align:left;
+      height: 120px;
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(6,5,18,.28);
+      border:1px solid rgba(242,210,138,.18);
+      color: rgba(239,232,215,.92);
+      box-shadow: none;
+      font-family:var(--mono);
+      transition: transform .12s ease, border-color .12s ease, filter .12s ease;
+    }
+    .cardBtn:hover{
+      transform: translateY(-2px);
+      border-color: rgba(242,210,138,.36);
+      filter: brightness(1.04);
+    }
+    .cardTitle{
+      font-weight:900;
+      font-family:var(--pixel);
+      font-size:10px;
+      color: var(--gold);
+      margin-bottom:6px;
+      text-transform:uppercase;
+      letter-spacing:.45px;
+    }
+    .cardDesc{
+      font-family:var(--mono);
+      font-size:12px;
+      color: var(--muted);
+      font-weight:600;
+      line-height:1.4;
+    }
+
+    .pop{
+      position:absolute;
+      right:14px;
+      top:14px;
+      font-family:var(--pixel);
+      font-size:12px;
+      letter-spacing:.4px;
+      padding:6px 8px;
+      border-radius: 12px;
+      border:1px solid rgba(242,210,138,.22);
+      background: rgba(6,5,18,.44);
+      animation: pop 950ms ease forwards;
+      pointer-events:none;
+      z-index:2;
+    }
+    .pop.dmg{ color: var(--danger); }
+    .pop.heal{ color: var(--ok); }
+    .pop.miss{ color: rgba(242,210,138,.95); }
+    @keyframes pop{
+      0%{ transform: translateY(10px) scale(.98); opacity:0; }
+      20%{ transform: translateY(0) scale(1); opacity:1; }
+      100%{ transform: translateY(-16px) scale(1); opacity:0; }
+    }
+
+    .cinema{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.92);
+    }
+    .cinema.show{ display:flex; }
+
+    .gate{
+      position:absolute;
+      inset:0;
+      overflow:hidden;
+      background:
+        radial-gradient(1200px 700px at 50% 30%, rgba(242,210,138,.10), transparent 60%),
+        radial-gradient(900px 600px at 50% 70%, rgba(124,247,177,.08), transparent 62%),
+        linear-gradient(180deg, #050414, #0b0a16);
+    }
+    .gate:after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(1200px 800px at 50% 40%, transparent 56%, rgba(0,0,0,.75));
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    .door{
+      position:absolute;
+      top:0; bottom:0;
+      width:50%;
+      background:
+        linear-gradient(180deg, rgba(242,210,138,.06), rgba(0,0,0,0)),
+        rgba(10,9,22,.95);
+      box-shadow: inset 0 0 0 1px rgba(242,210,138,.14);
+    }
+    .door.left{ left:0; }
+    .door.right{ right:0; }
+
+    .sigil{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      transform: scale(.98);
+    }
+    .sigil .text{
+      font-family:var(--pixel);
+      text-transform:uppercase;
+      letter-spacing:.7px;
+      font-size:12px;
+      color: var(--gold);
+      padding:16px 14px;
+      border-radius: 18px;
+      border:1px solid rgba(242,210,138,.22);
+      background: rgba(0,0,0,.42);
+      box-shadow: 0 18px 60px rgba(0,0,0,.65);
+      text-align:center;
+      line-height:1.7;
+    }
+
+    .cinema.run .sigil{ animation: sigilIn 900ms ease forwards; }
+    @keyframes sigilIn{
+      0%{ opacity:0; transform: scale(.98); }
+      40%{ opacity:1; transform: scale(1); }
+      100%{ opacity:0; transform: scale(1.02); }
+    }
+
+    .cinema.run .door.left{ animation: openLeft 1200ms cubic-bezier(.2,.8,.2,1) forwards; }
+    .cinema.run .door.right{ animation: openRight 1200ms cubic-bezier(.2,.8,.2,1) forwards; }
+    @keyframes openLeft{ to{ transform: translateX(-108%); } }
+    @keyframes openRight{ to{ transform: translateX(108%); } }
+
+    .cinemaFlash{
+      position:absolute;
+      inset:0;
+      background: radial-gradient(900px 500px at 50% 50%, rgba(242,210,138,.22), transparent 62%);
+      opacity:0;
+      pointer-events:none;
+    }
+    .cinema.run .cinemaFlash{ animation: flash 900ms ease forwards; }
+    @keyframes flash{
+      0%{ opacity:0; }
+      35%{ opacity:1; }
+      100%{ opacity:0; }
+    }
+
+    .startOnly{
+      position:absolute;
+      inset:0;
+      z-index:40;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .startOnly button{
+      padding:18px 20px;
+      font-size:13px;
+      border-radius: 18px;
+    }
+
+    .prestartHide{
+      opacity:0;
+      pointer-events:none;
+      transform: scale(0.995);
+    }
+
+    .frame.end .sceneImgWrap{ bottom: 300px; }
+    .frame.end .typed{ min-height: 240px; }
+
+    @media (max-width: 900px){
+      .frame{
+        width: calc(100vw - 24px);
+        height: min(900px, calc(100vh - 24px));
+      }
+      .sceneImgWrap{ bottom: 320px; }
+      .textBox{ width:100%; }
+      .typed{ font-size:17px; line-height:1.85; max-width: 70ch; }
+      .hand{ grid-template-columns: 1fr; }
+      button{ width:100%; }
+      .miniHud{ display:none; }
+    }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="crumbs" id="crumbs" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="cinema" id="cinema" aria-hidden="true">
+    <div class="gate"></div>
+    <div class="door left"></div>
+    <div class="door right"></div>
+    <div class="cinemaFlash"></div>
+    <div class="sigil">
+      <div class="text">
+        ВРАТА ОТКРЫВАЮТСЯ<br/>
+        SEED: 67 / 52<br/>
+        “А КТО РАССКАЗАЛ?”
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="frame" id="frame" role="application" aria-label="Открытка-новелла">
+
+      <div class="startOnly" id="startOnly">
+        <button id="startBtn">НАЧАТЬ ЗАБЕГ</button>
+      </div>
+
+      <div class="hudTop prestartHide" id="hudTop">
+        <div class="brand">
+          <div class="h">ХРАМ РОГАЛИКА</div>
+        </div>
+        <div class="miniHud" id="miniHud">
+          <div class="pill">Комната <span id="roomIndex">1</span>/5</div>
+        </div>
+      </div>
+
+      <div class="sceneArea prestartHide" id="sceneArea">
+        <div class="sceneImgWrap" id="sceneImgWrap">
+          <img id="sceneImg" src="scene-1.jpg" alt="Сцена" />
+        </div>
+
+        <div class="textBox">
+          <div class="chapter">
+            <div class="title" id="chapterTitle">…</div>
+            <div class="meta" id="chapterMeta"></div>
+          </div>
+
+          <div class="typed">
+            <span id="typedText"></span><span class="cursor" id="cursor" style="display:none;"></span>
+          </div>
+
+          <div id="battle" class="battle" style="display:none;">
+            <div class="battleHead">
+              <div class="left">ДУЭЛЬ • КАМЕНЩИК САН</div>
+              <div class="right">
+                Dodoshka: <span id="pHp">10</span> ❤️ • Сан: <span id="bHp">16</span> ❤️ • Раунд: <span id="round">1</span>
+              </div>
+            </div>
+
+            <div id="battleLog" class="battleLog">> ...</div>
+            <div class="hand" id="hand"></div>
+          </div>
+
+          <div class="hintRow">
+            <div class="tags">
+              <span class="tag" id="tag1"></span>
+              <span class="tag" id="tag2"></span>
+              <span class="tag" id="tag3"></span>
+            </div>
+
+            <div class="controls">
+              <button id="nextBtn" style="display:none;">ДАЛЬШЕ →</button>
+              <button id="skipBtn" class="ghost" style="display:none;">ПРОПУСТИТЬ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function makeCrumbs(){
+      const root = document.getElementById('crumbs');
+      const n = 18;
+      for(let i=0;i<n;i++){
+        const d = document.createElement('div');
+        d.className = 'crumb';
+        const x = Math.random() * 100;
+        const t = 8 + Math.random() * 14;
+        const size = 4 + Math.random() * 6;
+        d.style.setProperty('--x', x + 'vw');
+        d.style.setProperty('--t', t + 's');
+        d.style.width = size + 'px';
+        d.style.height = size + 'px';
+        d.style.left = x + 'vw';
+        d.style.top = (Math.random()*100) + 'vh';
+        d.style.opacity = (0.18 + Math.random()*0.42).toFixed(2);
+        root.appendChild(d);
+      }
+    })();
+
+    const state = {
+      started: false,
+      scene: 0,
+
+      typing: false,
+      typingFull: "",
+      typingIndex: 0,
+      typingTimer: null,
+
+      glitchCooldown: 0,
+      glitchActive: false,
+
+      battle: { active:false, playerHp:10, bossHp:16, round:1, locked:false }
+    };
+
+    const frameEl = document.getElementById('frame');
+    const cinemaEl = document.getElementById('cinema');
+
+    const startOnlyEl = document.getElementById('startOnly');
+    const startBtn = document.getElementById('startBtn');
+
+    const hudTopEl = document.getElementById('hudTop');
+    const sceneAreaEl = document.getElementById('sceneArea');
+
+    const sublineEl = document.getElementById('subline');
+    const roomIndexEl = document.getElementById('roomIndex');
+
+    const sceneImgWrapEl = document.getElementById('sceneImgWrap');
+    const sceneImgEl = document.getElementById('sceneImg');
+
+    const chapterTitleEl = document.getElementById('chapterTitle');
+    const chapterMetaEl = document.getElementById('chapterMeta');
+
+    const typedTextEl = document.getElementById('typedText');
+    const cursorEl = document.getElementById('cursor');
+
+    const tag1El = document.getElementById('tag1');
+    const tag2El = document.getElementById('tag2');
+    const tag3El = document.getElementById('tag3');
+
+    const nextBtn = document.getElementById('nextBtn');
+    const skipBtn = document.getElementById('skipBtn');
+
+    const battleEl = document.getElementById('battle');
+    const pHpEl = document.getElementById('pHp');
+    const bHpEl = document.getElementById('bHp');
+    const roundEl = document.getElementById('round');
+    const battleLogEl = document.getElementById('battleLog');
+    const handEl = document.getElementById('hand');
+
+    const scenes = [
+      {
+        title: "Сцена 1 — Дома",
+        meta: "вечер • тихо • чай рядом",
+        img: "scene-1.jpg",
+        tags: ["письмо: входящее", "источник: мистер президент", "фраза: а кто рассказал"],
+        text: [
+          "Dodoshka дома. Обычный вечер — пока не появляется конверт.",
+          "Печать аккуратная, как будто её ставили не для формы, а чтобы ты точно открыла.",
+          "Подпись короткая: «тот самый мистер президент».",
+          "Внутри — несколько строк, которые не хочется читать быстро.",
+          "И да: между строк будто прячутся коды. 67. 52. А кто рассказал — вопрос открытый."
+        ].join(`
+        `)
+      },
+      {
+        title: "Сцена 2 — Путь к храму",
+        meta: "город → ночь → дорожка к свету",
+        img: "scene-2.jpg",
+        tags: ["бафф: радость", "код: 67", "код: 52"],
+        text: [
+          "Письмо заканчивается, а внутри остаётся чувство — тёплое и бодрое.",
+          "Радость приходит тихо. А следом — желание идти туда, куда зовёт письмо.",
+          "Ты выходишь из дома и понимаешь: сегодня будет приключение.",
+          "Ты складываешь конверт, как карту маршрута, и выходишь из дома: в письме уже указано, куда идти — к храму.",
+          "Путь к храму отмечен странными подсказками — будто кто-то заранее расставил маркеры.",
+          "67. 52. И всё ещё: а кто рассказал?"
+        ].join(`
+        `)
+      },
+      {
+        title: "Сцена 3 — Меч и спуск",
+        meta: "вход найден • вниз • крошки на ступенях",
+        img: "scene-3.jpg",
+        tags: ["лут: меч", "настрой: спокойно", "цель: зайти в храм"],
+        text: [
+          "У входа — пьедестал. На нём меч.",
+          "Выглядит так, будто его делали под маленького героя “на вырост”.",
+          "Dodoshka берёт меч… он на секунду кажется больше неё, но это быстро перестаёт быть проблемой: хват уверенный, взгляд серьёзный, и всё — 'теперь это мой меч'.",
+          "Она спускается в храм, и где-то глубже слышно, как кто-то ?! .. ."
+        ].join(`
+        `)
+      },
+      {
+        title: "Сцена 4 — Встреча в храме",
+        meta: "внутри • холодно • очень деловой злодей",
+        img: "scene-4.jpg",
+        tags: ["враг: Каменщик Сан", "механика: карты", "правило: ты попадаешь"],
+        text: [
+          "В коридоре стоит Каменщик Сан.",
+          "Заклятый злодей и враг: любит ставить стены там, где человеку нужен проход — и потом ещё спорить, что “так красивее”.",
+          "Его уже несколько раз кикали с сервера за “самовольную стройку”, но он каждый раз возвращался, как будто у него сохранёнка прямо перед баном.",
+          "Он поднимает молот — будто собирается доказать, что “радость — лишнее”.",
+          "Но тут другие правила: карточная дуэль. И да — ты сегодня попадаешь всегда."
+        ].join(`
+        `)
+      },
+      {
+        title: "Сцена 5 — Выход и победа",
+        meta: "наружу • воздух • трава существует",
+        img: "scene-5.jpg",
+        tags: ["статус: победа", "мем: потрогай траву", "награда: поздравление"],
+        text: [
+          "Когда стены заканчиваются — начинается воздух.",
+          "Ты выходишь из храма, и мир становится большим, простым и живым.",
+          "",
+          "Dodoshka, поздравляю тебя с днём рождения. .",
+          "Пусть все квесты, которые ты себе поставила, закрываются на “идеально”,",
+          "а цели — превращаются в выполненные достижения одна за другой, без лишних и чужих 'Надо'.",
+          "",
+          "Ты правда справишься — без сомнений. С днём рождения!",
+          "",
+          "Лут получен: «наконец-то потрогаешь траву».",
+          "",
+          "P.S. Письмо действительно было от того самого мистера президента.",
+          "А кто рассказал? 67. 52. Ну ты поняла."
+        ].join(`
+        `)
+      }
+    ];
+
+    const cards = [
+      { name:"Кинуть зеленый банан", desc:"Нанести 3 урона.", dmg:3 },
+      { name:"67", desc:"Нанести 4 урона.", dmg:4 },
+      { name:"52", desc:"Нанести 4 урона.", dmg:4 },
+      { name:"Написать Мистеру Президенту", desc:"Нанести 2 урона и +1 к настроению.", dmg:2, heal:1 },
+      { name:"Поиграть вместе", desc:"Нанести 2 урона.", dmg:2 },
+      { name:"А кто рассказал", desc:"Нанести 3 урона. Сан теряется.", dmg:3 }
+    ];
+
+    function setTopHUD(){
+      roomIndexEl.textContent = (state.scene + 1);
+    }
+
+    function setTags(){
+      const t = scenes[state.scene].tags;
+      tag1El.textContent = t[0] || "";
+      tag2El.textContent = t[1] || "";
+      tag3El.textContent = t[2] || "";
+    }
+
+    function setSceneImage(mode){
+      if(mode === "hide"){
+        sceneImgWrapEl.classList.remove('show');
+        return;
+      }
+      sceneImgEl.src = scenes[state.scene].img;
+      requestAnimationFrame(() => sceneImgWrapEl.classList.add('show'));
+    }
+
+    function stopTyping(){
+      if(state.typingTimer) clearTimeout(state.typingTimer);
+      state.typingTimer = null;
+      state.typing = false;
+      cursorEl.style.display = "none";
+      skipBtn.style.display = "none";
+      state.glitchActive = false;
+    }
+
+    function schedule(fn, ms){
+      state.typingTimer = setTimeout(fn, ms);
+    }
+
+    function maybeGlitch(){
+      if(state.glitchCooldown > 0) return false;
+      const chance = 0.006;
+      if(Math.random() > chance) return false;
+      state.glitchCooldown = 220;
+      state.glitchActive = true;
+      return true;
+    }
+
+    function typeStep(){
+      if(!state.typing) return;
+
+      if(state.glitchCooldown > 0) state.glitchCooldown--;
+
+      if(!state.glitchActive && maybeGlitch()){
+        const before = typedTextEl.textContent;
+        typedTextEl.textContent = before + "...";
+        schedule(() => {
+          typedTextEl.textContent = before;
+          state.glitchActive = false;
+          schedule(typeStep, 240);
+        }, 360);
+        return;
+      }
+
+      const step = 1;
+      state.typingIndex = Math.min(state.typingFull.length, state.typingIndex + step);
+      typedTextEl.textContent = state.typingFull.slice(0, state.typingIndex);
+
+      if(state.typingIndex >= state.typingFull.length){
+        stopTyping();
+        onTypingFinished();
+        return;
+      }
+
+      const ch = state.typingFull[state.typingIndex - 1] || "";
+      let delay = 26;
+      if(ch === " ") delay = 14;
+      if(ch === "\\n") delay = 120;
+      if(".!?,".includes(ch)) delay = 120;
+
+      schedule(typeStep, delay);
+    }
+
+    function startTyping(fullText){
+      stopTyping();
+      state.typing = true;
+      state.typingFull = fullText;
+      state.typingIndex = 0;
+      state.glitchCooldown = 120;
+      typedTextEl.textContent = "";
+      cursorEl.style.display = "inline-block";
+      skipBtn.style.display = "inline-block";
+      nextBtn.disabled = true;
+
+      setSceneImage("show");
+      schedule(typeStep, 220);
+    }
+
+    function skipTyping(){
+      if(!state.typing) return;
+      typedTextEl.textContent = state.typingFull;
+      stopTyping();
+      onTypingFinished();
+    }
+
+    function onTypingFinished(){
+      if(state.scene === 3){
+        battleStart();
+        nextBtn.style.display = "none";
+        sublineEl.textContent = "дуэль активна • ты попадаешь • сан мимо";
+        return;
+      }
+      if(state.scene === 4){
+        nextBtn.style.display = "none";
+        sublineEl.textContent = "победа • выход найден";
+        frameEl.classList.add('end');
+        return;
+      }
+      nextBtn.style.display = "inline-block";
+      nextBtn.disabled = false;
+      sublineEl.textContent = "Пробел / Enter = Дальше";
+    }
+
+    function setBattleHUD(){
+      pHpEl.textContent = state.battle.playerHp;
+      bHpEl.textContent = state.battle.bossHp;
+      roundEl.textContent = state.battle.round;
+    }
+
+    function pop(text, kind){
+      const d = document.createElement('div');
+      d.className = 'pop ' + (kind || '');
+      d.textContent = text;
+      battleEl.appendChild(d);
+      setTimeout(() => d.remove(), 980);
+    }
+
+    function renderHand(){
+      handEl.innerHTML = "";
+      const hand = [];
+      while(hand.length < 3) hand.push(cards[Math.floor(Math.random()*cards.length)]);
+
+      hand.forEach((c) => {
+        const btn = document.createElement('button');
+        btn.className = 'cardBtn';
+        btn.innerHTML = `<div class="cardTitle">${c.name}</div><div class="cardDesc">${c.desc}</div>`;
+        btn.addEventListener('click', () => playCard(c));
+        handEl.appendChild(btn);
+      });
+    }
+
+    function battleStart(){
+      state.battle.active = true;
+      state.battle.playerHp = 10;
+      state.battle.bossHp = 16;
+      state.battle.round = 1;
+      state.battle.locked = false;
+      battleEl.style.display = "block";
+      battleLogEl.textContent = "> Выбери карту. Попадание гарантировано. Ответ Сана — строго MISS.";
+      setBattleHUD();
+      renderHand();
+    }
+
+    function lockHand(locked){
+      state.battle.locked = locked;
+      [...handEl.querySelectorAll('button')].forEach(b => b.disabled = locked);
+    }
+
+    async function playCard(card){
+      if(!state.battle.active || state.battle.locked) return;
+
+      lockHand(true);
+
+      const dmg = card.dmg || 0;
+      const heal = card.heal || 0;
+
+      state.battle.bossHp -= dmg;
+      if(dmg > 0) pop("-" + dmg, "dmg");
+
+      if(heal > 0){
+        state.battle.playerHp = Math.min(12, state.battle.playerHp + heal);
+        pop("+" + heal, "heal");
+      }
+
+      battleLogEl.textContent = `> “${card.name}”: попадание.`;
+      setBattleHUD();
+
+      await new Promise(r => setTimeout(r, 520));
+
+      pop("MISS", "miss");
+      battleLogEl.textContent = "> Каменщик Сан отвечает… MISS.";
+      setBattleHUD();
+
+      await new Promise(r => setTimeout(r, 320));
+
+      if(state.battle.bossHp <= 0){
+        state.battle.bossHp = 0;
+        state.battle.active = false;
+        setBattleHUD();
+        battleLogEl.textContent = "> Победа. Проход открыт.";
+        handEl.innerHTML = "";
+        nextBtn.style.display = "inline-block";
+        nextBtn.disabled = false;
+        sublineEl.textContent = "дуэль завершена • можно идти дальше";
+        return;
+      }
+
+      state.battle.round += 1;
+      setBattleHUD();
+      renderHand();
+      lockHand(false);
+    }
+
+    function renderScene(){
+      setTopHUD();
+      setTags();
+
+      const sc = scenes[state.scene];
+      chapterTitleEl.textContent = sc.title;
+      chapterMetaEl.textContent = sc.meta;
+
+      setSceneImage("hide");
+
+      battleEl.style.display = "none";
+      nextBtn.disabled = true;
+      nextBtn.style.display = "none";
+
+      startTyping(sc.text);
+    }
+
+    function next(){
+      if(state.typing){
+        skipTyping();
+        return;
+      }
+
+      if(state.scene === 3 && state.battle.bossHp > 0){
+        return;
+      }
+
+      if(state.scene >= 4) return;
+
+    state.scene += 1;
+    renderScene();
+}
+
+function startCinematicThenRun(){
+  if(state.started) return;
+  state.started = true;
+
+  // Убираем стартовую кнопку
+  startOnlyEl.classList.add('hidden');
+
+  // Показываем врата
+  cinemaEl.classList.add('show');
+  cinemaEl.classList.add('run');
+
+  setTimeout(() => {
+    cinemaEl.classList.remove('run');
+    cinemaEl.classList.remove('show');
+
+    // Показываем интерфейс
+    hudTopEl.classList.remove('prestartHide');
+    sceneAreaEl.classList.remove('prestartHide');
+
+    renderScene();
+  }, 1400);
+}
+
+// buttons
+startBtn.addEventListener('click', startCinematicThenRun);
+nextBtn.addEventListener('click', next);
+skipBtn.addEventListener('click', skipTyping);
+
+// initial state
+hudTopEl.classList.add('prestartHide');
+sceneAreaEl.classList.add('prestartHide');
+sceneImgWrapEl.classList.remove('show');
+typedTextEl.textContent = "";
+cursorEl.style.display = "none";
+
+  </script>
+</body>
+</html>
+
+
